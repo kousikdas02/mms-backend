@@ -36,8 +36,6 @@ exports.signup = async (req, res) => {
     });
   }
 };
-
-
 exports.signin = async (req, res) => {
   try {
     const emailFromReq = req.body.email;
@@ -101,8 +99,6 @@ exports.signin = async (req, res) => {
     });
   }
 };
-
-
 exports.makeAdmin = async (req, res) => {
   try {
     const userObj = {
@@ -126,43 +122,7 @@ exports.makeAdmin = async (req, res) => {
       status: 500
     });
   }
-
-
-  exports.signup = async (req, res) => {
-    try {
-      const userObj = {
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
-        email: req.body.email,
-        phone: req.body.phone,
-        gender: req.body.gender,
-        password: bcrypt.hashSync(req.body.password, 8),
-      };
-
-      const savedUser = await User.create(userObj);
-
-      const postResponse = {
-        _id: savedUser._id,
-        firstName: savedUser.firstName,
-        lastName: savedUser.lastName,
-        email: savedUser.email,
-        phone: savedUser.phone,
-        gender: savedUser.gender,
-        createdAt: savedUser.createdAt,
-        updatedAt: savedUser.updatedAt,
-      };
-      res.status(200).send({ data: postResponse, status: 200 });
-    } catch (err) {
-      console.log("Error while registering user ", err.message);
-      res.status(500).send({
-        message: "Some internal server error",
-        status: 500
-      });
-    }
-  };
-
 };
-
 exports.getUsers = async (req, res) => {
   try {
     const queryObj = { role: { $ne: 'admin' } };
@@ -201,6 +161,34 @@ exports.updateProfile = async (req, res) => {
     res.status(200).send({ data: updatedUser, message: "Successfully updated the User", status: 200 });
   } catch (err) {
     console.log("Error while updating user ", err.message);
+    res.status(500).send({
+      message: "Some internal server error",
+      status: 500
+    });
+  }
+}
+exports.updatePassword = async (req, res) => {
+  try {
+    const userTobeUpdated = await User.findById(req.userId);
+     // Ensure password matches
+     // Req password is in plain string
+     // Database password is hashed
+     // So we compare using the bcrypt
+     const isValidPassword = bcrypt.compareSync(
+       req.body.oldPassword,
+       userTobeUpdated.password
+     );
+ 
+     if (!isValidPassword) {
+       return res.status(401).send({
+         message: "Please enter correct password",
+       });
+     }
+    userTobeUpdated.password = bcrypt.hashSync(req.body.newPassword, 8);
+    const updatedUser = await userTobeUpdated.save();
+    res.status(200).send({ data: updatedUser, message: "Successfully changed the password", status: 200 });
+  } catch (err) {
+    console.log("Error while updating user password", err.message);
     res.status(500).send({
       message: "Some internal server error",
       status: 500
