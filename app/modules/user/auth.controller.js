@@ -42,7 +42,7 @@ exports.signin = async (req, res) => {
     const passwordFromReq = req.body.password;
 
     // Ensure the user is valid
-    const userSaved = await User.findOne({ email: emailFromReq });
+    const userSaved = await User.findOne({ email: emailFromReq }).select('+password');;
 
     if (!userSaved) {
       return res.status(401).send({
