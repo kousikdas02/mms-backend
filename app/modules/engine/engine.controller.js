@@ -1,5 +1,5 @@
 const Engine = require("./engine.model");
-
+const mongoose = require('mongoose');
 
 exports.createEngine = async (req, res) => {
     try {
@@ -24,6 +24,9 @@ exports.getEngines = async (req, res) => {
         const queryObj = {};
         if (req.query.status) {
             queryObj['status'] = req.query.status;
+        }
+        if (req.query.model) {
+            queryObj['model'] = mongoose.Types.ObjectId.createFromHexString(req.query.model);
         }
         const allEngines = await Engine.find(queryObj).populate('model');
         res.status(200).send({ data: allEngines, message: "Successfully fetched all Engines", status: 200 });

@@ -1,4 +1,5 @@
 const Model = require("./model.model");
+const mongoose = require('mongoose');
 
 
 exports.createModel = async (req, res) => {
@@ -24,6 +25,9 @@ exports.getModels = async (req, res) => {
         const queryObj = {};
         if (req.query.status) {
             queryObj['status'] = req.query.status;
+        }
+        if (req.query.manufacturer) {
+            queryObj['manufacturer'] = mongoose.Types.ObjectId.createFromHexString(req.query.manufacturer);
         }
         const allModels = await Model.find(queryObj).populate('manufacturer');
         res.status(200).send({ data: allModels, message: "Successfully fetched all Models", status: 200 });
