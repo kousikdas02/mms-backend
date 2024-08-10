@@ -5,6 +5,7 @@ function registerRoutes(app) {
     require("./model.route")(app);
     require("./engine.route")(app);
     require("./booking.route")(app);
+    require("./contact.route")(app);
 };
 
 module.exports = registerRoutes;

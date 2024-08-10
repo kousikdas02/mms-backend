@@ -1,6 +1,6 @@
 const Booking = require("./booking.model");
 const User = require("../user/user.model");
-
+const mongoose = require('mongoose');
 
 exports.createBooking = async (req, res) => {
     try {
@@ -35,7 +35,7 @@ exports.getBookings = async (req, res) => {
         }
         const userObj = await User.findById(req.userId);
         if(userObj.role == 'user'){
-            queryObj['bookedBy'] = req.userId;
+            queryObj['bookedBy'] = mongoose.Types.ObjectId.createFromHexString(req.userId);
         }
         const allBookings = await Booking.find(queryObj);
         res.status(200).send({ data: allBookings, message: "Successfully fetched all Bookings", status: 200 });
