@@ -69,8 +69,28 @@ const isAdminOrBookingOwner = async (req, res, next) => {
     });
   }
 };
+
+// Middleware to check if user is booking owner
+const isBookingOwner = async (req, res, next) => {
+  try {
+    const booking = await Booking.findById(req.params.bookingId)
+    if (booking && booking.bookedBy == req.userId) {
+      next()
+    } else {
+      return res.status(403).send({
+        message: "Only Booking Owner is Allowed",
+      });
+    }
+  } catch {
+    console.log("Error while checking if isAdmin ", err.message);
+    res.status(500).send({
+      message: "Some internal server error",
+    });
+  }
+};
 module.exports = {
   verifytoken: verifytoken,
   isAdmin: isAdmin,
-  isAdminOrBookingOwner: isAdminOrBookingOwner
+  isAdminOrBookingOwner: isAdminOrBookingOwner,
+  isBookingOwner: isBookingOwner
 };
