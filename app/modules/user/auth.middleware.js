@@ -73,7 +73,7 @@ const isAdminOrBookingOwner = async (req, res, next) => {
 // Middleware to check if user is booking owner
 const isBookingOwner = async (req, res, next) => {
   try {
-    const booking = await Booking.findById(req.params.bookingId)
+    const booking = await Booking.findById(req.params.bookingId);
     if (booking && booking.bookedBy == req.userId) {
       next()
     } else {

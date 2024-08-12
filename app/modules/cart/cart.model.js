@@ -6,7 +6,7 @@ const cartSchema = new mongoose.Schema({
         ref: "service"
     },
     vehicleYear: {
-        type: Date,
+        type: String,
         require: true
     },
     vehicleManufacturer: {
@@ -29,7 +29,7 @@ const cartSchema = new mongoose.Schema({
         require: true
     },
     location: {
-        type: Date,
+        type: String,
         require: true
     },
     createdBy: {
