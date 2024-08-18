@@ -42,11 +42,12 @@ exports.signin = async (req, res) => {
     const passwordFromReq = req.body.password;
 
     // Ensure the user is valid
-    const userSaved = await User.findOne({ email: emailFromReq }).select('+password');;
+    const userSaved = await User.findOne({ email: emailFromReq }).select('+password');
 
     if (!userSaved) {
       return res.status(401).send({
         message: "Email given is not correct",
+        status: 401
       });
     }
 
@@ -62,6 +63,7 @@ exports.signin = async (req, res) => {
     if (!isValidPassword) {
       return res.status(401).send({
         message: "Incorrect password",
+        status:401
       });
     }
 
@@ -169,21 +171,21 @@ exports.updateProfile = async (req, res) => {
 }
 exports.updatePassword = async (req, res) => {
   try {
-    const userTobeUpdated = await User.findById(req.userId);
-     // Ensure password matches
-     // Req password is in plain string
-     // Database password is hashed
-     // So we compare using the bcrypt
-     const isValidPassword = bcrypt.compareSync(
-       req.body.oldPassword,
-       userTobeUpdated.password
-     );
- 
-     if (!isValidPassword) {
-       return res.status(401).send({
-         message: "Please enter correct password",
-       });
-     }
+    const userTobeUpdated = await User.findById(req.userId).select('+password');;
+    // Ensure password matches
+    // Req password is in plain string
+    // Database password is hashed
+    // So we compare using the bcrypt
+    const isValidPassword = bcrypt.compareSync(
+      req.body.oldPassword,
+      userTobeUpdated.password
+    );
+
+    if (!isValidPassword) {
+      return res.status(401).send({
+        message: "Please enter correct password",
+      });
+    }
     userTobeUpdated.password = bcrypt.hashSync(req.body.newPassword, 8);
     const updatedUser = await userTobeUpdated.save();
     res.status(200).send({ data: updatedUser, message: "Successfully changed the password", status: 200 });

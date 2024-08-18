@@ -9,10 +9,10 @@ exports.createBooking = async (req, res) => {
     try {
         const bookingObj = {
             service: req.body.service,
-            vehicleYear: req.body.vehicleYear,
-            vehicleManufacturer: req.body.vehicleManufacturer,
-            vehicleModel: req.body.vehicleModel,
-            vehicleEngine: req.body.vehicleEngine,
+            vehicleYear: req.body.year,
+            vehicleManufacturer: req.body.manufacturer,
+            vehicleModel: req.body.model,
+            vehicleEngine: req.body.engine,
             serviceDate: req.body.serviceDate,
             location: req.body.location,
             bookedBy: req.userId,
@@ -87,41 +87,50 @@ exports.getBookings = async (req, res) => {
             ...queryArr,
             {
                 $lookup: {
-                    from: "services", // The collection to join
-                    localField: "service", // Field from the input documents
-                    foreignField: "_id", // Field from the documents of the "from" collection
-                    as: "serviceDetails" // Output array field
+                    from: "services",
+                    localField: "service",
+                    foreignField: "_id",
+                    as: "serviceDetails"
                 },
             },
             {
                 $lookup: {
-                    from: "manufacturers", // The collection to join
-                    localField: "vehicleManufacturer", // Field from the input documents
-                    foreignField: "_id", // Field from the documents of the "from" collection
-                    as: "manufacturerDetails" // Output array field
+                    from: "manufacturers",
+                    localField: "vehicleManufacturer",
+                    foreignField: "_id",
+                    as: "manufacturerDetails"
                 }
             },
             {
                 $lookup: {
-                    from: "models", // The collection to join
-                    localField: "vehicleModel", // Field from the input documents
-                    foreignField: "_id", // Field from the documents of the "from" collection
-                    as: "vehicleModelDetails" // Output array field
+                    from: "models",
+                    localField: "vehicleModel",
+                    foreignField: "_id",
+                    as: "vehicleModelDetails"
                 }
             },
             {
                 $lookup: {
-                    from: "engines", // The collection to join
-                    localField: "vehicleEngine", // Field from the input documents
-                    foreignField: "_id", // Field from the documents of the "from" collection
-                    as: "vehicleEngineDetails" // Output array field
+                    from: "engines",
+                    localField: "vehicleEngine",
+                    foreignField: "_id",
+                    as: "vehicleEngineDetails"
                 }
             },
             {
                 $addFields: {
-                    totalPrice: { $sum: "$serviceDetails.price" }
+                    totalPrice: {
+                        $sum: {
+                            $map: {
+                                input: "$serviceDetails",
+                                as: "service",
+                                in: "$$service.price"
+                            }
+                        }
+                    }
                 }
             }
+
         ]);
         res.status(200).send({ data: allBookings, message: "Successfully fetched all Bookings", status: 200 });
     } catch (err) {
