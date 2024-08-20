@@ -9,6 +9,6 @@ module.exports = (app) => {
     app.get("/mms/api/v1/user", [auth.verifytoken, auth.isAdmin], authController.getUsers);
     app.get("/mms/api/v1/user/profile", [auth.verifytoken], authController.getProfile);
     app.put("/mms/api/v1/user/profile", [auth.verifytoken], authController.updateProfile);
-    app.put("/mms/api/v1/user/password", [auth.verifytoken], authController.updateProfile);
+    app.put("/mms/api/v1/user/password", [auth.verifytoken], authController.updatePassword);
 
 }
