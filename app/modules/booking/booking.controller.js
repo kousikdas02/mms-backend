@@ -94,30 +94,6 @@ exports.getBookings = async (req, res) => {
                 },
             },
             {
-                $lookup: {
-                    from: "manufacturers",
-                    localField: "vehicleManufacturer",
-                    foreignField: "_id",
-                    as: "manufacturerDetails"
-                }
-            },
-            {
-                $lookup: {
-                    from: "models",
-                    localField: "vehicleModel",
-                    foreignField: "_id",
-                    as: "vehicleModelDetails"
-                }
-            },
-            {
-                $lookup: {
-                    from: "engines",
-                    localField: "vehicleEngine",
-                    foreignField: "_id",
-                    as: "vehicleEngineDetails"
-                }
-            },
-            {
                 $addFields: {
                     totalPrice: {
                         $sum: {
@@ -155,30 +131,6 @@ exports.getBooking = async (req, res) => {
                     foreignField: "_id", // Field from the documents of the "from" collection
                     as: "serviceDetails" // Output array field
                 },
-            },
-            {
-                $lookup: {
-                    from: "manufacturers", // The collection to join
-                    localField: "vehicleManufacturer", // Field from the input documents
-                    foreignField: "_id", // Field from the documents of the "from" collection
-                    as: "manufacturerDetails" // Output array field
-                }
-            },
-            {
-                $lookup: {
-                    from: "models", // The collection to join
-                    localField: "vehicleModel", // Field from the input documents
-                    foreignField: "_id", // Field from the documents of the "from" collection
-                    as: "vehicleModelDetails" // Output array field
-                }
-            },
-            {
-                $lookup: {
-                    from: "engines", // The collection to join
-                    localField: "vehicleEngine", // Field from the input documents
-                    foreignField: "_id", // Field from the documents of the "from" collection
-                    as: "vehicleEngineDetails" // Output array field
-                }
             },
             {
                 $addFields: {

@@ -7,6 +7,8 @@ function registerRoutes(app) {
     require("./booking.route")(app);
     require("./contact.route")(app);
     require("./cart.route")(app);
+    require("./config.route")(app);
+    require("./slots.route")(app);
 };
 
 module.exports = registerRoutes;

@@ -51,6 +51,7 @@ exports.getManufacturers = async (queryObj) => {
             },
         };
         const manufacturers = await axios.request(options)
+        // console.log(manufacturers)
         return manufacturers.data.data;
     } catch (err) {
         console.log(err);

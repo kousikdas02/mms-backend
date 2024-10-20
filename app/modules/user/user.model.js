@@ -29,6 +29,11 @@ const userSchema = new mongoose.Schema({
         require: true,
         select: false
     },
+    walletBalance: {
+        type: Number,
+        require: true,
+        default: 0
+    },
     role: {
         type: String,
         require: true,
