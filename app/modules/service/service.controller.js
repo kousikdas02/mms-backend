@@ -4,12 +4,18 @@ const fileDelete = require("../../utils/deletefiles");
 
 exports.createService = async (req, res) => {
     try {
+        console.log(req.body)
+        const specialConsiderationArr = [];
+        req.body.specialConsideration.forEach((element) => {
+            specialConsiderationArr.push(JSON.parse(element))
+          });
         const serviceObj = {
             name: req.body.name,
             description: req.body.description,
             price: req.body.price,
             status: 'active',
-            images: []
+            images: [],
+            specialConsideration: specialConsiderationArr
         };
         req.files.forEach(element => {
             serviceObj.images.push(element.filename);
@@ -78,6 +84,9 @@ exports.updateService = async (req, res) => {
         serviceTobeUpdated.price = req.body.price ? req.body.price : serviceTobeUpdated.price;
         serviceTobeUpdated.status = req.body.status ? req.body.status : serviceTobeUpdated.status;
         serviceTobeUpdated.images = images.length > 0 ? images : serviceTobeUpdated.images;
+        serviceTobeUpdated.specialConsideration = req.body.specialConsideration ? req.body.specialConsideration : serviceTobeUpdated.specialConsideration;
+
+
 
         const updatedService = await serviceTobeUpdated.save();
         res.status(200).send({ data: updatedService, message: "Successfully updated the service", status: 200 });

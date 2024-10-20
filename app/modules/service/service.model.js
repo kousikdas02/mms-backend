@@ -17,6 +17,9 @@ const serviceSchema = new mongoose.Schema({
         type: Number,
         require: true,
     },
+    specialConsideration:{
+        type:[],
+    },
     status:{
         type:String,
         required:true,
