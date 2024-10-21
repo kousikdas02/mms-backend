@@ -10,22 +10,15 @@ const cartSchema = new mongoose.Schema({
         require: true
     },
     vehicleManufacturer: {
-        type: mongoose.SchemaTypes.ObjectId,
-        ref: "manufacturer",
+        type: String,
         require: true
     },
     vehicleModel: {
-        type: mongoose.SchemaTypes.ObjectId,
-        ref: "model",
+        type: String,
         require: true
     },
     vehicleEngine: {
-        type: mongoose.SchemaTypes.ObjectId,
-        ref: "engine",
-        require: true
-    },
-    serviceDate: {
-        type: Date,
+        type: String,
         require: true
     },
     location: {
