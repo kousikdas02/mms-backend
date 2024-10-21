@@ -125,24 +125,25 @@ exports.deleteSlot = async (req, res) => {
 const Booking = require("../booking/booking.model");
 exports.getServiceSlots = async (req, res) => {
     try {
-        const queryObj = {};
-        if (req.query.date) {
-            const dateString = req.query.date;
-            const [day, month, year] = dateString.split('/');
-            const date = new Date(`${year}-${month}-${day}`);
-
-            // Set start of the day (midnight)
-            const startOfDay = new Date(date.setUTCHours(0, 0, 0, 0));
-
-            // Set end of the day (just before the next day)
-            const endOfDay = new Date(date.setUTCHours(23, 59, 59, 999));
-
-            // Update the query object with date range
-            queryObj['date'] = {
-                "$gte": startOfDay,
-                "$lt": endOfDay
-            };
+        if (!req.query.date || !req.query.service) {
+            return res.status(400).send({ data: [], message: "Date & Service is required to get slots", status: 400 });
         }
+        const queryObj = {};
+        const dateString = req.query.date;
+        const [day, month, year] = dateString.split('/');
+        const date = new Date(`${year}-${month}-${day}`);
+
+        // Set start of the day (midnight)
+        const startOfDay = new Date(date.setUTCHours(0, 0, 0, 0));
+
+        // Set end of the day (just before the next day)
+        const endOfDay = new Date(date.setUTCHours(23, 59, 59, 999));
+
+        // Update the query object with date range
+        queryObj['date'] = {
+            "$gte": startOfDay,
+            "$lt": endOfDay
+        };
         let slotObj = await Slots.findOne(queryObj);
         // if slot is not present
         const config = await Config.findOne({});
@@ -162,9 +163,16 @@ exports.getServiceSlots = async (req, res) => {
             return res.status(200).send({ data: [], message: "Successfully fetched all slots", status: 200 });
         }
         const totalTimeTakenByService = multiplyTime(config.serviceTime, typeof req.query.service == 'string' ? 1 : req.query.service.length);
-        console.log(totalTimeTakenByService)
-        // console.log(slotObj)
-        const slots = createTimeSlots(slotObj.startTime, slotObj.endTime, totalTimeTakenByService);
+
+        const queryObj2 = {
+            serviceDate: {
+                "$gte": startOfDay,
+                "$lt": endOfDay
+            }
+        };
+        const allBookings = await Booking.find(queryObj2);
+        const availableSlots = removeBookedSlots(slotObj.startTime, slotObj.endTime, allBookings.map((item) => item.serviceSlot));
+        const slots = createTimeSlots(availableSlots, totalTimeTakenByService);
         return res.status(200).send({ data: slots, message: "Successfully fetched all slots", status: 200 });
     } catch (err) {
         console.log("Error while fetching slots ", err.message);
@@ -209,23 +217,74 @@ function convertToMinutes(time) {
     const [hours, minutes] = time.split(':').map(Number);
     return hours * 60 + minutes;
 }
-
 function convertToTimeString(minutes) {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
 }
 
-function createTimeSlots(startTime, endTime, slotDuration) {
-    const start = convertToMinutes(startTime);
-    const end = convertToMinutes(endTime);
-    const slotDurationInMinutes = convertToMinutes(slotDuration);
-    
-    const slots = [];
-    for (let current = start; current + slotDurationInMinutes <= end; current += slotDurationInMinutes) {
-        const nextSlot = current + slotDurationInMinutes;
-        slots.push(`${convertToTimeString(current)} - ${convertToTimeString(nextSlot)}`);
+function createTimeSlots(availableSlots, slotDuration) {
+    // Convert time to minutes
+    function convertToMinutes(time) {
+        const [hours, minutes] = time.split(':').map(Number);
+        return hours * 60 + minutes;
     }
+    // Convert minutes to time
+    function convertToTimeString(minutes) {
+        const hours = String(Math.floor(minutes / 60)).padStart(2, '0');
+        const mins = String(minutes % 60).padStart(2, '0');
+        return `${hours}:${mins}`;
+    }
+    
+    const slotDurationInMinutes = convertToMinutes(slotDuration);
+    const slots = [];
+
+    availableSlots.forEach(slot => {
+        const start = convertToMinutes(slot.startTime);
+        const end = convertToMinutes(slot.endTime);
+        
+        for (let current = start; current + slotDurationInMinutes <= end; current += slotDurationInMinutes) {
+            const nextSlot = current + slotDurationInMinutes;
+            slots.push(`${convertToTimeString(current)}-${convertToTimeString(nextSlot)}`);
+        }
+    });
 
     return slots;
+}
+
+
+function removeBookedSlots(startTime, endTime, bookedSlots) {
+    // Convert times to minutes
+    function timeToMinutes(time) {
+        const [hours, minutes] = time.split(':').map(Number);
+        return hours * 60 + minutes;
+    }
+    // Convert minutes to time
+    function minutesToTime(minutes) {
+        const hours = String(Math.floor(minutes / 60)).padStart(2, '0');
+        const mins = String(minutes % 60).padStart(2, '0');
+        return `${hours}:${mins}`;
+    }
+
+    const start = timeToMinutes(startTime);
+    const end = timeToMinutes(endTime);
+
+    const availableSlots = [];
+
+    let currentStart = start;
+
+    bookedSlots.forEach(slot => {
+        const [bookedStart, bookedEnd] = slot.split(' - ').map(timeToMinutes);
+
+        if (currentStart < bookedStart) {
+            availableSlots.push({ startTime: minutesToTime(currentStart), endTime: minutesToTime(bookedStart) });
+        }
+        currentStart = bookedEnd;
+    });
+
+    if (currentStart < end) {
+        availableSlots.push({ startTime: minutesToTime(currentStart), endTime: minutesToTime(end) });
+    }
+
+    return availableSlots;
 }

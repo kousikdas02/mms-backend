@@ -7,6 +7,9 @@ const Service = require("../service/service.model");
 
 exports.createBooking = async (req, res) => {
     try {
+        const dateString = req.body.serviceDate;
+        const [day, month, year] = dateString.split('/');
+        const date = new Date(`${year}-${month}-${day}`);
         const bookingObj = {
             service: req.body.service,
             vehicleYear: req.body.vehicleYear,
@@ -16,7 +19,7 @@ exports.createBooking = async (req, res) => {
             location: req.body.location,
             totalAmount: req.body.totalAmount,
             minimumAmount: req.body.minimumAmount,
-            serviceDate: req.body.serviceDate,
+            serviceDate: new Date(date.setUTCHours(0, 0, 0, 0)),
             serviceSlot: req.body.serviceSlot,
             bookedBy: req.userId,
             paymentStatus: 'pending',
