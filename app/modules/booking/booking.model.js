@@ -21,10 +21,6 @@ const bookingSchema = new mongoose.Schema({
         type: String,
         require: true
     },
-    serviceDate: {
-        type: Date,
-        require: true
-    },
     location: {
         type: String,
         require: true
@@ -38,11 +34,11 @@ const bookingSchema = new mongoose.Schema({
         type: [String],
         require: false
     },
-    invoiceId:{
+    invoiceId: {
         type: [String],
         require: false
     },
-    payment_intent:{
+    payment_intent: {
         type: [String],
         require: false
     },
@@ -56,10 +52,43 @@ const bookingSchema = new mongoose.Schema({
         require: false,
         default: 0
     },
+    refundAtWallet: {
+        type: Number,
+        require: false,
+        default: 0
+    },
+    totalAmount: {
+        type: Number,
+        require: true,
+        default: 0
+    },
+    minimumAmount: {
+        type: Number,
+        require: true,
+        default: 0
+    },
+    paidAmount: {
+        type: Number,
+        require: true,
+        default: 0
+    },
+    walletRedeemed: {
+        type: [Number],
+        require: true,
+        default: 0
+    },
+    serviceDate: {
+        type: Date,
+        require: true
+    },
+    serviceSlot: {
+        type: String,
+        require: true
+    },
     status: {
         type: String,
         required: true,
-        enum: ['active', 'canceled', 'completed']
+        enum: ['active', 'canceled', 'completed', 'failed']
     },
     createdAt: {
         type: Date,

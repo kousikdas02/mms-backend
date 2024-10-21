@@ -8,6 +8,7 @@ exports.AddOrUpdateConfig = async (req, res) => {
         if (config) {
             // means config is created, we need to update that
             config.minimumBookingPrice = req.body.minimumBookingPrice ? req.body.minimumBookingPrice : config.minimumBookingPrice;
+            config.serviceTime = req.body.serviceTime ? req.body.serviceTime : config.serviceTime;
             config.startTime = req.body.startTime ? req.body.startTime : config.startTime;
             config.endTime = req.body.endTime ? req.body.endTime : config.endTime;
             const updatedConfig = await config.save();
@@ -16,6 +17,7 @@ exports.AddOrUpdateConfig = async (req, res) => {
         // Config is not created, then lets create one
         const ConfigObj = {
             minimumBookingPrice: req.body.minimumBookingPrice,
+            serviceTime: req.body.serviceTime,
             startTime: req.body.startTime,
             endTime: req.body.endTime
         };

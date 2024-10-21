@@ -5,6 +5,11 @@ const configSchema = new mongoose.Schema({
         type: Number,
         require: true
     },
+    serviceTime:{
+        type:String,
+        require: true,
+        enum: ['30min', '45min', '1h']
+    },
     startTime: {
         type: String,
         require: true
