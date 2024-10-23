@@ -168,11 +168,18 @@ exports.getServiceSlots = async (req, res) => {
             serviceDate: {
                 "$gte": startOfDay,
                 "$lt": endOfDay
-            }
+            },
+            status: 'active'
         };
         const allBookings = await Booking.find(queryObj2);
-        const availableSlots = removeBookedSlots(slotObj.startTime, slotObj.endTime, allBookings.map((item) => item.serviceSlot));
+        const allBookingsSlotArr = allBookings.map((item) => item.serviceSlot);
+
+        const availableSlots = findFreeSlots(slotObj, allBookingsSlotArr);
+        // console.log(slotObj)
+        // console.log(allBookings)
         const slots = createTimeSlots(availableSlots, totalTimeTakenByService);
+        // console.log(slots)
+
         return res.status(200).send({ data: slots, message: "Successfully fetched all slots", status: 200 });
     } catch (err) {
         console.log("Error while fetching slots ", err.message);
@@ -213,36 +220,29 @@ function multiplyTime(time, multiplier) {
     // Return formatted result
     return `${formattedHours}:${formattedMinutes}`;
 }
-function convertToMinutes(time) {
-    const [hours, minutes] = time.split(':').map(Number);
-    return hours * 60 + minutes;
-}
-function convertToTimeString(minutes) {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
-}
-
 function createTimeSlots(availableSlots, slotDuration) {
     // Convert time to minutes
     function convertToMinutes(time) {
         const [hours, minutes] = time.split(':').map(Number);
         return hours * 60 + minutes;
     }
-    // Convert minutes to time
+
+    // Convert minutes to time string "HH:mm"
     function convertToTimeString(minutes) {
         const hours = String(Math.floor(minutes / 60)).padStart(2, '0');
         const mins = String(minutes % 60).padStart(2, '0');
         return `${hours}:${mins}`;
     }
-    
     const slotDurationInMinutes = convertToMinutes(slotDuration);
     const slots = [];
 
+    // Loop through each available slot
     availableSlots.forEach(slot => {
-        const start = convertToMinutes(slot.startTime);
-        const end = convertToMinutes(slot.endTime);
-        
+        const [startTime, endTime] = slot.split('-').map(String);
+        const start = convertToMinutes(startTime);
+        const end = convertToMinutes(endTime);
+
+        // Create smaller slots within the available slot duration
         for (let current = start; current + slotDurationInMinutes <= end; current += slotDurationInMinutes) {
             const nextSlot = current + slotDurationInMinutes;
             slots.push(`${convertToTimeString(current)}-${convertToTimeString(nextSlot)}`);
@@ -252,39 +252,45 @@ function createTimeSlots(availableSlots, slotDuration) {
     return slots;
 }
 
-
-function removeBookedSlots(startTime, endTime, bookedSlots) {
-    // Convert times to minutes
-    function timeToMinutes(time) {
+function findFreeSlots(slot, bookedSlots) {
+    // Helper to convert time string "HH:mm" to minutes from 00:00
+    const timeToMinutes = (time) => {
         const [hours, minutes] = time.split(':').map(Number);
         return hours * 60 + minutes;
-    }
-    // Convert minutes to time
-    function minutesToTime(minutes) {
-        const hours = String(Math.floor(minutes / 60)).padStart(2, '0');
-        const mins = String(minutes % 60).padStart(2, '0');
-        return `${hours}:${mins}`;
-    }
+    };
 
-    const start = timeToMinutes(startTime);
-    const end = timeToMinutes(endTime);
+    // Helper to convert minutes back to "HH:mm" format
+    const minutesToTime = (minutes) => {
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+    };
 
-    const availableSlots = [];
+    // Parse the start and end times of the slot
+    const slotStart = timeToMinutes(slot.startTime);
+    const slotEnd = timeToMinutes(slot.endTime);
 
-    let currentStart = start;
-
-    bookedSlots.forEach(slot => {
-        const [bookedStart, bookedEnd] = slot.split(' - ').map(timeToMinutes);
-
-        if (currentStart < bookedStart) {
-            availableSlots.push({ startTime: minutesToTime(currentStart), endTime: minutesToTime(bookedStart) });
-        }
-        currentStart = bookedEnd;
+    // Parse the booked slots
+    const booked = bookedSlots.map((s) => {
+        const [start, end] = s.split('-').map(timeToMinutes);
+        return { start, end };
     });
 
-    if (currentStart < end) {
-        availableSlots.push({ startTime: minutesToTime(currentStart), endTime: minutesToTime(end) });
+    // Find free slots
+    const freeSlots = [];
+    let currentTime = slotStart;
+
+    for (const { start, end } of booked) {
+        if (currentTime < start) {
+            freeSlots.push(`${minutesToTime(currentTime)}-${minutesToTime(start)}`);
+        }
+        currentTime = Math.max(currentTime, end); // Move current time to after the booked slot
     }
 
-    return availableSlots;
+    // Check for any remaining time after the last booked slot
+    if (currentTime < slotEnd) {
+        freeSlots.push(`${minutesToTime(currentTime)}-${minutesToTime(slotEnd)}`);
+    }
+
+    return freeSlots;
 }
