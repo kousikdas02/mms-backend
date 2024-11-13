@@ -30,7 +30,7 @@ const checkAuth = async () => {
         if (!carApiJWT.timeToLive && now > carApiJWT.timeToLive) {
             await initCarApi();
         } else {
-            // console.log("auth for carApi is not over yet.");
+            console.log("auth for carApi is not over yet.");
         }
     } catch (err) {
         console.log(err);
