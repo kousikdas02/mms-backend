@@ -6,9 +6,10 @@ exports.createService = async (req, res) => {
     try {
         console.log(req.body)
         const specialConsiderationArr = [];
-        req.body.specialConsideration.forEach((element) => {
+        if(req.body.specialConsideration){
+            req.body.specialConsideration.forEach((element) => {
             specialConsiderationArr.push(JSON.parse(element))
-          });
+          });}
         const serviceObj = {
             name: req.body.name,
             description: req.body.description,
