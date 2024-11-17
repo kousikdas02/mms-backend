@@ -6,10 +6,11 @@ exports.createService = async (req, res) => {
     try {
         console.log(req.body)
         const specialConsiderationArr = [];
-        if(req.body.specialConsideration){
+        if (req.body.specialConsideration) {
             req.body.specialConsideration.forEach((element) => {
-            specialConsiderationArr.push(JSON.parse(element))
-          });}
+                specialConsiderationArr.push(JSON.parse(element))
+            });
+        }
         const serviceObj = {
             name: req.body.name,
             description: req.body.description,
@@ -85,11 +86,13 @@ exports.updateService = async (req, res) => {
         serviceTobeUpdated.price = req.body.price ? req.body.price : serviceTobeUpdated.price;
         serviceTobeUpdated.status = req.body.status ? req.body.status : serviceTobeUpdated.status;
         serviceTobeUpdated.images = images.length > 0 ? images : serviceTobeUpdated.images;
-        if(serviceTobeUpdated.specialConsideration){
-            serviceTobeUpdated.specialConsideration = req.body.specialConsideration
-        }else{
-            serviceTobeUpdated.specialConsideration = []
+        const specialConsiderationArr = [];
+        if (serviceTobeUpdated.specialConsideration) {
+            req.body.specialConsideration.forEach((element) => {
+                specialConsiderationArr.push(JSON.parse(element))
+            });
         }
+        serviceTobeUpdated.specialConsideration = specialConsiderationArr;
 
 
 
