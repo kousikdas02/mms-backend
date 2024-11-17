@@ -85,7 +85,11 @@ exports.updateService = async (req, res) => {
         serviceTobeUpdated.price = req.body.price ? req.body.price : serviceTobeUpdated.price;
         serviceTobeUpdated.status = req.body.status ? req.body.status : serviceTobeUpdated.status;
         serviceTobeUpdated.images = images.length > 0 ? images : serviceTobeUpdated.images;
-        serviceTobeUpdated.specialConsideration = req.body.specialConsideration ? req.body.specialConsideration : serviceTobeUpdated.specialConsideration;
+        if(serviceTobeUpdated.specialConsideration){
+            serviceTobeUpdated.specialConsideration = req.body.specialConsideration
+        }else{
+            serviceTobeUpdated.specialConsideration = []
+        }
 
 
 
