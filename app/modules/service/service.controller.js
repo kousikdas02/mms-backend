@@ -87,7 +87,7 @@ exports.updateService = async (req, res) => {
         serviceTobeUpdated.status = req.body.status ? req.body.status : serviceTobeUpdated.status;
         serviceTobeUpdated.images = images.length > 0 ? images : serviceTobeUpdated.images;
         const specialConsiderationArr = [];
-        if (serviceTobeUpdated.specialConsideration) {
+        if (req.body.specialConsideration) {
             req.body.specialConsideration.forEach((element) => {
                 specialConsiderationArr.push(JSON.parse(element))
             });
