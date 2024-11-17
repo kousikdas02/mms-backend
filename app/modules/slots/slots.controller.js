@@ -84,7 +84,7 @@ exports.updateSlot = async (req, res) => {
 
         slotToBeUpdated.startTime = req.body.startTime ? req.body.startTime : slotToBeUpdated.startTime;
         slotToBeUpdated.endTime = req.body.endTime ? req.body.endTime : slotToBeUpdated.endTime;
-
+        slotToBeUpdated.noSlot = false;
 
         const updatedSlot = await slotToBeUpdated.save();
         res.status(200).send({ data: updatedSlot, message: "Successfully updated the slot", status: 200 });
